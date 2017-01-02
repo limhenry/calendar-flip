@@ -1,0 +1,297 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+`calendar-flip`
+3D flip calendar/clock with animation
+
+@demo demo/index.html 
+-->
+
+<dom-module id="calendar-flip">
+  <template>
+    <style>
+      :host {
+        display: flex;
+        justify-content: center;
+      }
+
+      .flip {
+          position: relative;
+          float: left;
+          margin: 5px;
+          width: 100px;
+          height: 90px;
+          font-size: 65px;
+          font-weight: bold;
+          line-height: 87px;
+          border-radius: 6px;
+          box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      #f {
+          z-index: 1;
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 2;
+      }
+
+      #f #p {
+          display: block;
+          height: 100%;
+          perspective: 200px;
+      }
+
+      .up,
+      .down{
+          z-index: 1;
+          position: absolute;
+          left: 0;
+          width: 100%;
+          height: 50%;
+          overflow: hidden;
+      }
+
+      .shadow {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          z-index: 2;
+      }
+
+      .up {
+          transform-origin: 50% 100%;
+          top: 0;
+      }
+
+      .up:after {
+          content: "";
+          position:absolute;
+          top:44px;
+          left:0;
+          z-index: 5;
+          width: 100%;
+          height: 3px;
+          background-color: rgba(255,255,255,.4);
+      }
+
+      .down {
+          transform-origin: 50% 0%;
+          bottom: 0;
+      }
+
+      .inn {
+          position: absolute;
+          left: 0;
+          z-index: 1;
+          width: 100%;
+          height: 200%;
+          color: #000;
+          text-align: center;
+          background-color: #fff;
+          border-radius: 6px;
+      }
+
+      .up .inn {
+          top: 0;
+      }
+
+      .down .inn {
+          bottom: 0;
+      }
+
+      #f.before {
+          z-index: 3;
+      }
+
+      #f.active {
+          animation: asd .5s .5s linear both;
+          z-index: 2;
+      }
+
+      #f.active .down {
+          z-index: 2;
+          animation: turn .5s .5s linear both;
+      }
+
+      #f.before .up {
+          z-index: 2;
+          animation: turn2 .5s linear both;
+      }
+
+      #f.before .up .shadow {
+          background: #424242;
+          animation: show .5s ease-in-out both;
+          box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+      }
+
+      @keyframes show {
+          0% {
+              opacity: 0;
+          }
+          100% {
+              opacity: 1;
+          }
+      } 
+
+      @keyframes asd {
+          0% {
+              z-index: 2;
+          }
+          5% {
+              z-index: 4;
+          }
+          100% {
+              z-index: 4;
+          }
+      }
+
+      @keyframes turn {
+          0% {
+              transform: rotateX(90deg);
+          }
+          100% {
+              transform: rotateX(0deg);
+          }
+      }
+
+
+      @keyframes turn2 {
+          0% {
+              transform: rotateX(0deg);
+          }
+          100% {
+              transform: rotateX(-90deg);
+          }
+      }
+            
+    </style>
+        <div class="flip">
+            <div id="f">
+                <div id="p">
+                    <div class="up">
+                        <div class="shadow"></div>
+                        <div class="inn">{{_currentValue}}</div>
+                    </div>
+                    <div class="down">
+                        <div class="shadow"></div>
+                        <div class="inn">{{_currentValue}}</div>
+                    </div>
+                </div>
+            </div>
+            <div id="f">
+                <div id="p">
+                    <div class="up">
+                        <div class="shadow"></div>
+                        <div class="inn">{{_nextValue}}</div>
+                    </div>
+                    <div class="down">
+                        <div class="shadow"></div>
+                        <div class="inn">{{_nextValue}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'calendar-flip',
+
+      properties: {
+         /**
+         * The number that indicates the minimum value of the calendar.
+         */          
+          min: {
+              value: 0,
+              type: Number
+          },
+         /**
+         * The number that indicates the maximum value of the calendar.
+         */                  
+          max: {
+              value: 30,
+              type: Number
+          },
+          /**
+          * The duration in milliseconds to flip the calendar.
+          */
+          duration: {
+              value: 1000,
+              type: Number
+          },
+          /**
+          * Reset the value to minimum value.
+          */          
+          resetToDefault: {
+              value: false,
+              type: Boolean
+          },
+          /**
+          * Autoplay the calendar flip animation.
+          */
+          autoplay: {
+              value: true,
+              type: Boolean              
+          }
+      },
+
+      _flip: function(){
+          var a = Polymer.dom(this.root).querySelectorAll('#f')[0];
+          var b = Polymer.dom(this.root).querySelectorAll('#f')[1];
+          if (a.classList.contains("before")) {
+              b.classList.add("before");
+              b.classList.remove("active");
+              a.classList.add("active");
+              a.classList.remove("before");     
+              this._currentValue = this._nextValue + 1; 
+          }
+          else {
+              b.classList.remove("before");            
+              a.classList.remove("active");
+              a.classList.add("before");
+              b.classList.add("active");
+              this._nextValue = this._currentValue + 1;
+          }
+      },
+
+      /**
+       * Start the calendar flip animation.
+       * @method play
+       */
+      play: function(){
+        this.stop();
+        this._nextValue = this.min;
+        this._currentValue = this.min;
+        this.timer = setInterval(function () {
+            (this._nextValue < this.max && this._currentValue < this.max)?this._flip():this.stop();
+        }.bind(this), this.duration);          
+      },
+
+      ready: function(){
+          this._reset();
+          if (this.autoplay){
+              this.play();
+          }
+      },
+
+      _reset: function(){
+        this._nextValue = this.min;
+        this._currentValue = this.min;          
+      },
+
+      /**
+       * Stop the calendar flip animation.
+       * @method stop
+       */
+      stop: function(){
+        clearInterval(this.timer);
+        if (this.resetToDefault)this._reset();
+      }
+    });
+  </script>
+</dom-module>
+
